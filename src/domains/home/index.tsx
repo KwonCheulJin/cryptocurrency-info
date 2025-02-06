@@ -10,6 +10,7 @@ import { api_getSavedTickerList } from '@/domains/home/api';
 import Savebutton from '@/domains/home/Savebutton';
 import { formatNumber, sortByName, sortByVolume } from '@/domains/home/utils';
 import { useQuery, UseQueryOptions } from '@tanstack/react-query';
+import Link from 'next/link';
 import { FC, useState } from 'react';
 interface Props {}
 type SortType = 'volume' | 'name';
@@ -43,26 +44,28 @@ export const HomeMain: FC<Props> = () => {
             const rate = ((item.last - item.first) / item.first) * 100;
             return (
               <li key={`${item.target_currency}-${item.id}`}>
-                <span>{ticker}</span>
-                <br />
-                <span>{map?.get(ticker)?.name}</span>
-                <br />
-                <span>{formatNumber(item.last)}</span>
-                <br />
-                <span>{rate.toFixed(2)}%</span>
-                <br />
-                <span>{diff.toFixed(2)}</span>
-                <br />
-                <span>{formatNumber(item.quote_volume, 0)}</span>
-                <br />
-                <span>{formatNumber(item.target_volume, 0)}</span>
-                <br />
-                <Savebutton
-                  ticker={ticker}
-                  is_saved={!!saved_set?.has(ticker)}
-                />
-                <br />
-                <br />
+                <Link href={`/${ticker}`}>
+                  <span>{ticker}</span>
+                  <br />
+                  <span>{map?.get(ticker)?.name}</span>
+                  <br />
+                  <span>{formatNumber(item.last)}</span>
+                  <br />
+                  <span>{rate.toFixed(2)}%</span>
+                  <br />
+                  <span>{diff.toFixed(2)}</span>
+                  <br />
+                  <span>{formatNumber(item.quote_volume, 0)}</span>
+                  <br />
+                  <span>{formatNumber(item.target_volume, 0)}</span>
+                  <br />
+                  <Savebutton
+                    ticker={ticker}
+                    is_saved={!!saved_set?.has(ticker)}
+                  />
+                  <br />
+                  <br />
+                </Link>
               </li>
             );
           })}
