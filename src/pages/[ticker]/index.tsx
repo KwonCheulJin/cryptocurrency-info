@@ -1,3 +1,4 @@
+import { INTERVAL_LIST } from '@/api/cryptocurrency/chart/types';
 import { CryptocurrencyDetailMain, Interval } from '@/domains/home/detail';
 import { GetServerSideProps } from 'next';
 import { ComponentProps } from 'react';
@@ -22,7 +23,7 @@ export const getServerSideProps: GetServerSideProps<
   return {
     props: {
       ticker,
-      interval_for_initialize,
+      interval_for_initialize: interval_for_initialize ?? INTERVAL_LIST[0],
     },
   };
 };

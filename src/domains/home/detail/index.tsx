@@ -7,11 +7,14 @@ import {
   GetTickerInfoReturnType,
   TickerInfoHandlerResult,
 } from '@/api/cryptocurrency/ticker/detail/types';
+import useChart from '@/domains/home/detail/hooks/useChart';
+import useResizeObserver from '@/domains/home/detail/hooks/useResizeObserver';
+import { formatChartData } from '@/domains/home/detail/utils';
 import { formatNumber } from '@/domains/home/utils';
 import { useQuery, UseQueryOptions } from '@tanstack/react-query';
 import { useRouter } from 'next/router';
 
-import { ChangeEventHandler, FC, useState } from 'react';
+import { ChangeEventHandler, FC, useMemo, useRef, useState } from 'react';
 
 export type Interval = (typeof INTERVAL_LIST)[number];
 
@@ -25,6 +28,8 @@ export const CryptocurrencyDetailMain: FC<Props> = props => {
 
   const router = useRouter();
 
+  const chart_ref = useRef<HTMLDivElement>(null);
+
   const [interval, setInterval] = useState<Interval>(
     interval_for_initialize ?? INTERVAL_LIST[0]
   );
@@ -33,6 +38,18 @@ export const CryptocurrencyDetailMain: FC<Props> = props => {
   const { data: chart } = useQuery(
     getCandleChartQueryOptions({ ticker, interval })
   );
+
+  const chart_data = useMemo(() => formatChartData(chart), [chart]);
+
+  const { draw } = useChart({ chart_data });
+
+  useResizeObserver({
+    ref: chart_ref,
+    callback: entry => {
+      draw(entry.target);
+      console.log(entry.contentRect.width);
+    },
+  });
 
   const handleChangeInterval: ChangeEventHandler<HTMLInputElement> = e => {
     const value = e.currentTarget.value as Interval;
@@ -44,6 +61,7 @@ export const CryptocurrencyDetailMain: FC<Props> = props => {
   };
   return (
     <main>
+      <div ref={chart_ref} className="h-[500px]" />
       <ol>
         {INTERVAL_LIST.map(item => (
           <li key={`interval-item-${item}`}>
@@ -98,7 +116,7 @@ interface GetCandleChartQueryOptionParams {
   interval: Interval;
 }
 
-type GetCandleChartResponse = Extract<
+export type GetCandleChartResponse = Extract<
   ChartHandlerResult,
   GetCandleChartReturnType
 >;
