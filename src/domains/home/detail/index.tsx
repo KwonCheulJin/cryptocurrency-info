@@ -7,6 +7,7 @@ import {
   GetTickerInfoReturnType,
   TickerInfoHandlerResult,
 } from '@/api/cryptocurrency/ticker/detail/types';
+import DetailItem from '@/components/DetailItem';
 import useChart from '@/domains/home/detail/hooks/useChart';
 import useResizeObserver from '@/domains/home/detail/hooks/useResizeObserver';
 import { formatChartData } from '@/domains/home/detail/utils';
@@ -61,10 +62,16 @@ export const CryptocurrencyDetailMain: FC<Props> = props => {
   };
   return (
     <main>
+      <header className="h-[50px] flex items-center px-4">
+        <h1 className="text-2xl font-bold">{ticker}</h1>
+      </header>
       <div ref={chart_ref} className="h-[500px]" />
-      <ol>
+      <ol className="flex overflow-auto px-2.5 py-1.5 text-sm justify-center">
         {INTERVAL_LIST.map(item => (
-          <li key={`interval-item-${item}`}>
+          <li
+            key={`interval-item-${item}`}
+            className="block cursor-pointer px-2.5 py-1.5 border-r border-[#efefef] last:border-none"
+          >
             <input
               type="radio"
               name="interval"
@@ -72,40 +79,45 @@ export const CryptocurrencyDetailMain: FC<Props> = props => {
               value={item}
               id={item}
               onChange={handleChangeInterval}
+              className="hidden"
             />
-            <label htmlFor={item}>{item}</label>
+            <label
+              htmlFor={item}
+              className={`${
+                interval === item ? 'text-red-500' : ''
+              } p-1 cursor-pointer`}
+            >
+              {item}
+            </label>
           </li>
         ))}
       </ol>
-      <section>
-        <dl>
-          <dt>티커</dt>
-          <dd>{ticker_info?.target_currency.toUpperCase()}</dd>
-        </dl>
-        <dl>
-          <dt>시가</dt>
-          <dd>{formatNumber(ticker_info?.first ?? 0)}</dd>
-        </dl>
-        <dl>
-          <dt>종가</dt>
-          <dd>{formatNumber(ticker_info?.last ?? 0)}</dd>
-        </dl>
-        <dl>
-          <dt>고가</dt>
-          <dd>{formatNumber(ticker_info?.high ?? 0)}</dd>
-        </dl>
-        <dl>
-          <dt>저가</dt>
-          <dd>{formatNumber(ticker_info?.low ?? 0)}</dd>
-        </dl>
-        <dl>
-          <dt>체결금액</dt>
-          <dd>{formatNumber(ticker_info?.quote_volume ?? 0)}</dd>
-        </dl>
-        <dl>
-          <dt>체결량</dt>
-          <dd>{formatNumber(ticker_info?.target_volume ?? 0)}</dd>
-        </dl>
+      <section className="p-4 flex flex-col gap-1.5">
+        <DetailItem
+          title={'티커'}
+          desc={ticker_info?.target_currency.toUpperCase()}
+        />
+        <DetailItem
+          title={'시가'}
+          desc={formatNumber(ticker_info?.first ?? 0)}
+        />
+        <DetailItem
+          title={'종가'}
+          desc={formatNumber(ticker_info?.last ?? 0)}
+        />
+        <DetailItem
+          title={'고가'}
+          desc={formatNumber(ticker_info?.high ?? 0)}
+        />
+        <DetailItem title={'저가'} desc={formatNumber(ticker_info?.low ?? 0)} />
+        <DetailItem
+          title={'체결금액'}
+          desc={formatNumber(ticker_info?.quote_volume ?? 0)}
+        />
+        <DetailItem
+          title={'체결량'}
+          desc={formatNumber(ticker_info?.target_volume ?? 0)}
+        />
       </section>
     </main>
   );

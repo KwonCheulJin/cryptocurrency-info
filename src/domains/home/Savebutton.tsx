@@ -1,6 +1,7 @@
 import { SAVED_TICKER_LIST_KEY } from '@/domains/home';
 import { api_removeTicker, api_saveTicker } from '@/domains/home/api';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import Image from 'next/image';
 import { ComponentProps, MouseEventHandler } from 'react';
 
 interface Props extends ComponentProps<'button'> {
@@ -42,7 +43,12 @@ export default function Savebutton({
   };
   return (
     <button {...rest} onClick={handleClick}>
-      {is_saved ? '삭제' : '저장'}
+      <Image
+        width={24}
+        height={24}
+        src={`/${is_saved ? 'star_filled' : 'star_outlined'}.svg`}
+        alt={is_saved ? '저장됨' : '저장안됨'}
+      />
     </button>
   );
 }

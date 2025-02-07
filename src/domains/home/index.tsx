@@ -10,11 +10,18 @@ import { api_getSavedTickerList } from '@/domains/home/api';
 import Savebutton from '@/domains/home/Savebutton';
 import { formatNumber, sortByName, sortByVolume } from '@/domains/home/utils';
 import { useQuery, UseQueryOptions } from '@tanstack/react-query';
+import Image from 'next/image';
 import Link from 'next/link';
 import { FC, useState } from 'react';
 interface Props {}
 type SortType = 'volume' | 'name';
 export const DEFAULT_SORT = 'volume';
+
+const EngToKRStatus: Record<ReturnType<typeof getIncreaseStatus>, string> = {
+  increase: '상승',
+  decrease: '하락',
+  same: '변동 없음',
+};
 
 export const HomeMain: FC<Props> = () => {
   /**
@@ -28,43 +35,79 @@ export const HomeMain: FC<Props> = () => {
   const { data: saved_set } = useQuery(getSavedTickerSetQueryOptions());
 
   return (
-    <main>
-      <header>
-        <h1>암호화폐 목록</h1>
-        <div>
-          <button onClick={() => setSortBy('volume')}>거래금액순</button>
-          <button onClick={() => setSortBy('name')}>이름순</button>
+    <main className="px-2">
+      <header className="flex justify-between items-center py-[18px]">
+        <h1 className="text-3xl font-bold">암호화폐 목록</h1>
+        <div className="flex gap-2.5">
+          <button
+            onClick={() => setSortBy('volume')}
+            className={sort_by === 'volume' ? 'font-extrabold' : ''}
+          >
+            거래금액순
+          </button>
+          <button
+            onClick={() => setSortBy('name')}
+            className={sort_by === 'name' ? 'font-extrabold' : ''}
+          >
+            이름순
+          </button>
         </div>
       </header>
       <section>
-        <ol>
+        <ol className="flex flex-col gap-2.5">
           {list?.map(item => {
             const ticker = item.target_currency.toUpperCase();
             const diff = item.last - item.first;
             const rate = ((item.last - item.first) / item.first) * 100;
+
+            const status = getIncreaseStatus(diff);
+            const priceColor = getPriceColorByStatus(status);
             return (
               <li key={`${item.target_currency}-${item.id}`}>
-                <Link href={`/${ticker}`}>
-                  <span>{ticker}</span>
-                  <br />
-                  <span>{map?.get(ticker)?.name}</span>
-                  <br />
-                  <span>{formatNumber(item.last)}</span>
-                  <br />
-                  <span>{rate.toFixed(2)}%</span>
-                  <br />
-                  <span>{diff.toFixed(2)}</span>
-                  <br />
-                  <span>{formatNumber(item.quote_volume, 0)}</span>
-                  <br />
-                  <span>{formatNumber(item.target_volume, 0)}</span>
-                  <br />
+                <Link
+                  href={`/${ticker}`}
+                  className="grid p-2 rounded-lg hover:bg-[#efefef] grid-cols-[auto_1fr_auto_70px_150px_auto] grid-rows-[auto_auto] gap-x-4"
+                >
+                  <span className="row-start-1 row-end-3 self-center">
+                    <Image
+                      width={24}
+                      height={24}
+                      src={`/${status}.svg`}
+                      alt={`${EngToKRStatus} 아이콘`}
+                    />
+                  </span>
+                  <span className="col-start-2 col-end-3 text-sm">
+                    {ticker}
+                  </span>
+                  <span className="col-start-2 col-end-3 text-sm">
+                    {map?.get(ticker)?.name}
+                  </span>
+                  <span
+                    className={`col-start-3 col-end-4 row-start-1 row-end-3 font-bold ${priceColor}`}
+                  >
+                    {formatNumber(item.last)}
+                  </span>
+                  <span
+                    className={`col-start-4 col-end-5 row-start-1 row-end-2 text-sm ${priceColor}`}
+                  >
+                    {rate.toFixed(2)}%
+                  </span>
+                  <span
+                    className={`col-start-4 col-end-5 row-start-2 row-end-3 text-xs ${priceColor}`}
+                  >
+                    {diff.toFixed(2)}
+                  </span>
+                  <span className="col-start-5 col-end-6 row-start-1 row-end-2 text-sm text-right">
+                    {formatNumber(item.quote_volume, 0)}
+                  </span>
+                  <span className="col-start-5 col-end-6 row-start-2 row-end-3 text-xs text-right">
+                    {formatNumber(item.target_volume, 0)}
+                  </span>
                   <Savebutton
                     ticker={ticker}
                     is_saved={!!saved_set?.has(ticker)}
+                    className="col-start-6 col-end-7 row-start-1 row-end-3"
                   />
-                  <br />
-                  <br />
                 </Link>
               </li>
             );
@@ -148,4 +191,27 @@ function getSavedTickerSetQueryOptions(): UseQueryOptions<
       return new Set(data);
     },
   };
+}
+
+function getIncreaseStatus(diff: number) {
+  if (diff > 0) {
+    return 'increase';
+  }
+
+  if (diff < 0) {
+    return 'decrease';
+  }
+
+  return 'same';
+}
+
+function getPriceColorByStatus(status: ReturnType<typeof getIncreaseStatus>) {
+  if (status === 'increase') {
+    return 'text-red-500';
+  }
+  if (status === 'decrease') {
+    return 'text-blue-500';
+  }
+
+  return 'text-gray-500';
 }
